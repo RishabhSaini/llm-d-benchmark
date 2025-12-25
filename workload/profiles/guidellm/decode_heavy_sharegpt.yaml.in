@@ -1,0 +1,32 @@
+# Decode-heavy workload with Poisson distribution
+# Avg input: 153 tokens, Avg output: 588 tokens
+# Max length: 2048 tokens, Streaming enabled, No prefix caching
+
+target: REPLACE_ENV_LLMDBENCH_HARNESS_STACK_ENDPOINT_URL
+model: REPLACE_ENV_LLMDBENCH_DEPLOY_CURRENT_MODEL
+profile: constant
+request_type: text_completions
+
+rate: 80
+max_seconds: 100
+max_concurrency: 1000
+
+# Decode-heavy workload with Poisson distribution
+# Mean determines Poisson lambda; stdev = sqrt(mean) for Poisson
+data:
+  prompt_tokens_min: 50
+  prompt_tokens_max: 2048
+  prompt_tokens: 153
+  prompt_tokens_stdev: 12
+  output_tokens_min: 100
+  output_tokens_max: 2048
+  output_tokens: 588
+  output_tokens_stdev: 24
+  samples: -1
+
+# SLO headers for PD disaggregation routing
+# Based on baseline P90: TTFT ~300-370ms, TPOT ~11-15ms
+# Setting slightly below P90 to drive optimal pod selection
+headers:
+  x-slo-ttft-ms: "350"
+  x-slo-tpot-ms: "12"

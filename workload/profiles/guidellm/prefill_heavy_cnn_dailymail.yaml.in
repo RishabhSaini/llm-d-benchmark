@@ -1,0 +1,40 @@
+# Prefill-heavy workload with shared prefix caching
+# Avg input: 380 prefix + 575 unique = 955 tokens, Avg output: 162 tokens
+# Prefix is 39.8% of total prompt (< 40%)
+# 256 shared prefixes with variable suffix sizes for cache divergence testing
+
+target: REPLACE_ENV_LLMDBENCH_HARNESS_STACK_ENDPOINT_URL
+model: REPLACE_ENV_LLMDBENCH_DEPLOY_CURRENT_MODEL
+profile: constant
+request_type: text_completions
+
+rate: 50
+max_seconds: 100
+max_concurrency: 200
+random_seed: 2  # Can change to get different request sequences
+
+# Prefill-heavy workload with shared prefixes and Poisson distribution
+# prefix_tokens: Fixed shared context (380 tokens each, 39.8% of avg total)
+# prefix_count: Pool of 256 different prefixes (768 blocks total, forces cache divergence)
+# prompt_tokens: Variable unique suffix (575 ± 31 tokens, 60.2% of avg total)
+# output_tokens: Small output to emphasize prefill (162 ± 13 tokens)
+# Total input range: 750-1160 tokens, avg 955 tokens >> 162 output (5.9:1 ratio)
+data:
+  prefix_tokens: 380
+  prefix_count: 256
+  prompt_tokens_min: 475
+  prompt_tokens_max: 675
+  prompt_tokens: 575
+  prompt_tokens_stdev: 31
+  output_tokens_min: 50
+  output_tokens_max: 150
+  output_tokens: 162
+  output_tokens_stdev: 13
+  samples: -1
+
+# SLO headers for PD disaggregation routing
+# Based on baseline P90: TTFT ~650-1400ms, TPOT ~15-25ms
+# Setting slightly below P90 to drive optimal pod selection
+headers:
+  x-slo-ttft-ms: "2000"
+  x-slo-tpot-ms: "50"

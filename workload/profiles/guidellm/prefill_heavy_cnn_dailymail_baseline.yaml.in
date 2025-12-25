@@ -1,0 +1,27 @@
+# Prefill-heavy workload with Poisson distribution (BASELINE - No SLO headers)
+# Avg input: 955 tokens, Avg output: 162 tokens
+# Max length: 2048 tokens, Streaming enabled, No prefix caching
+
+target: REPLACE_ENV_LLMDBENCH_HARNESS_STACK_ENDPOINT_URL
+model: REPLACE_ENV_LLMDBENCH_DEPLOY_CURRENT_MODEL
+profile: constant
+request_type: text_completions
+
+rate: 10
+max_seconds: 100
+max_concurrency: 200
+
+# Prefill-heavy workload with Poisson distribution
+# Mean determines Poisson lambda; stdev = sqrt(mean) for Poisson
+data:
+  prompt_tokens_min: 800
+  prompt_tokens_max: 1000
+  prompt_tokens: 955
+  prompt_tokens_stdev: 31
+  output_tokens_min: 50
+  output_tokens_max: 150
+  output_tokens: 162
+  output_tokens_stdev: 13
+  samples: -1
+
+# No SLO headers - baseline for comparison
