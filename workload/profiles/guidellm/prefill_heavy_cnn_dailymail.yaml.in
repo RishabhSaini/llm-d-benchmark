@@ -8,10 +8,10 @@ model: REPLACE_ENV_LLMDBENCH_DEPLOY_CURRENT_MODEL
 profile: constant
 request_type: text_completions
 
-rate: 50
-max_seconds: 100
+rate: 2
+max_seconds: 5
 max_concurrency: 200
-random_seed: 2  # Can change to get different request sequences
+random_seed: 1  # Can change to get different request sequences
 
 # Prefill-heavy workload with shared prefixes and Poisson distribution
 # prefix_tokens: Fixed shared context (380 tokens each, 39.8% of avg total)
