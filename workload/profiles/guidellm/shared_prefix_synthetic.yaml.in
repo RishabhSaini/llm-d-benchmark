@@ -9,3 +9,7 @@ data:
   prefix_count: 32
   prompt_tokens: 256
   output_tokens: 256
+
+headers:
+  x-slo-ttft-ms: "2000"
+  x-slo-tpot-ms: "50"
