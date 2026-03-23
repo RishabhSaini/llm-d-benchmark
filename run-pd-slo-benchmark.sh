@@ -75,8 +75,8 @@ print_header "Step 2: Checking Deployment"
 PREFILL_PODS=$(kubectl get pods -n ${NAMESPACE} -l llm-d.ai/role=prefill --no-headers 2>/dev/null | wc -l)
 DECODE_PODS=$(kubectl get pods -n ${NAMESPACE} -l llm-d.ai/role=decode --no-headers 2>/dev/null | wc -l)
 
-if [ "$PREFILL_PODS" -eq 0 ] || [ "$DECODE_PODS" -eq 0 ]; then
-    print_warning "PD deployment not found or incomplete"
+if [ "$DECODE_PODS" -eq 0 ]; then
+    print_warning "No decode pods found"
     echo -e "  Current state: ${PREFILL_PODS} prefill pods, ${DECODE_PODS} decode pods"
 
     read -p "Do you want to deploy the stack now? (y/n) " -n 1 -r
@@ -92,7 +92,11 @@ if [ "$PREFILL_PODS" -eq 0 ] || [ "$DECODE_PODS" -eq 0 ]; then
         exit 1
     fi
 else
-    print_success "Found ${PREFILL_PODS} prefill pods and ${DECODE_PODS} decode pods"
+    if [ "$PREFILL_PODS" -gt 0 ]; then
+        print_success "Found ${PREFILL_PODS} prefill pods and ${DECODE_PODS} decode pods (P/D mode)"
+    else
+        print_success "Found ${DECODE_PODS} decode pods (decode-only mode)"
+    fi
 
     # Check if they're running
     RUNNING_PODS=$(kubectl get pods -n ${NAMESPACE} -l llm-d.ai/inferenceServing=true --field-selector=status.phase=Running --no-headers 2>/dev/null | wc -l)

@@ -23,6 +23,8 @@ def send_slo_request(
     enable_prediction: bool = True,
     stream: bool = False,
     use_completions: bool = False,
+    fairness_id: Optional[str] = None,
+    objective: Optional[str] = None,
 ) -> None:
     """
     Send an inference request with SLO headers.
@@ -38,6 +40,8 @@ def send_slo_request(
         enable_prediction: Enable prediction-based scheduling
         stream: Enable streaming mode
         use_completions: Use /v1/completions endpoint instead of /v1/chat/completions
+        fairness_id: Flow control fairness ID (x-gateway-inference-fairness-id header)
+        objective: Flow control objective name (x-gateway-inference-objective header)
     """
 
     # Construct the full URL based on API type
@@ -57,6 +61,12 @@ def send_slo_request(
 
     if tpot_slo_ms:
         headers["x-slo-tpot-ms"] = str(tpot_slo_ms)
+
+    if fairness_id:
+        headers["x-gateway-inference-fairness-id"] = fairness_id
+
+    if objective:
+        headers["x-gateway-inference-objective"] = objective
 
     # Request payload - format depends on API type
     if use_completions:
@@ -242,6 +252,15 @@ Examples:
 
   # No SLOs with streaming
   python slo_request.py --no-slo --stream
+
+  # With flow control headers
+  python slo_request.py --stream \\
+    --fairness-id tenant-A \\
+    --objective realtime-traffic
+
+  # Flow control with no SLOs
+  python slo_request.py --no-slo --stream \\
+    --fairness-id tenant-B --objective batch-traffic
         """,
     )
 
@@ -252,8 +271,8 @@ Examples:
     )
     parser.add_argument(
         "--model",
-        default="openai/gpt-oss-120b",
-        help="Model name (default: openai/gpt-oss-120b)",
+        default="Qwen/Qwen3-32B",
+        help="Model name (default: Qwen/Qwen3-32B)",
     )
     parser.add_argument(
         "--prompt",
@@ -304,6 +323,16 @@ Examples:
         action="store_true",
         help="Use /v1/completions endpoint instead of /v1/chat/completions (default: chat/completions)",
     )
+    parser.add_argument(
+        "--fairness-id",
+        default=None,
+        help="Flow control fairness ID (sets x-gateway-inference-fairness-id header)",
+    )
+    parser.add_argument(
+        "--objective",
+        default=None,
+        help="Flow control objective name (sets x-gateway-inference-objective header, must match an InferenceObjective resource)",
+    )
 
     args = parser.parse_args()
 
@@ -322,6 +351,8 @@ Examples:
         enable_prediction=not args.no_prediction,
         stream=args.stream,
         use_completions=args.use_completions,
+        fairness_id=args.fairness_id,
+        objective=args.objective,
     )
 
 
